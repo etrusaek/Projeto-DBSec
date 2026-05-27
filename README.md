@@ -1,12 +1,22 @@
 # Sistema de Autenticação Segura #
 
-## Descrição do Projeto
+Este é um projeto de autenticação web desenvolvido para a matéria de Segurança de Banco de Dados. Ele implementa um fluxo de validação progressiva com hash parcial e armazenamento seguro via Triggers no MySQL.
 
-Este projeto implementa um sistema de autenticação web com **hash parcial** e **validação progressiva**, conforme os requisitos da atividade avaliativa de Segurança de Banco de Dados. O sistema utiliza:
+##Funcionalidades
 
-- **Frontend**: HTML5, JavaScript (com Web Crypto API para SHA-256)
-- **Backend**: Node.js com Express
-- **Banco de Dados**: MySQL com TRIGGERS para armazenamento de hash parcial
+•
+Validação Progressiva: Verifica a existência do usuário e valida a senha localmente antes do login;
+
+•
+Hash Parcial: Armazena apenas um fragmento aleatório de 17 caracteres do hash no banco de dados;
+
+•
+Segurança Local: Geração de hash SHA-256 no frontend utilizando a matrícula do aluno como sal;
+
+•
+Interface Moderna: Layout responsivo com alternância entre login e cadastro.
+
+
 
 ## Arquitetura do Sistema
 
