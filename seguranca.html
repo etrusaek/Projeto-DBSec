@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Sistema de Autenticação - Segurança de Banco de Dados</title>
+	<!-- Bootstrap 5.3 -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/css/bootstrap.min.css" />
+	<!-- Google Fonts -->
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			--bg-gradient: linear-gradient(135deg, #4c51bf 0%, #6b46c1 100%);
+			--success-color: #48bb78;
+			--danger-color: #f56565;
+			--warning-color: #ed8936;
+			--text-main: #2d3748;
+			--white: #ffffff;
+		}
+
+		body {
+			background: var(--bg-gradient);
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-family: 'Inter', sans-serif;
+			margin: 0;
+			padding: 20px;
+		}
+
+		/* Container Principal Centralizado */
+		.main-container {
+			width: 100%;
+			max-width: 450px;
+			perspective: 1000px;
+		}
+
+		.auth-card {
+			background: rgba(255, 255, 255, 0.15);
+			backdrop-filter: blur(15px);
+			-webkit-backdrop-filter: blur(15px);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			border-radius: 24px;
+			padding: 40px;
+			box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+			color: var(--white);
+			transition: all 0.4s ease-in-out;
+		}
+
+		.auth-header {
+			text-align: center;
+			margin-bottom: 35px;
+		}
+
+		.auth-header h2 {
+			font-weight: 700;
+			font-size: 1.8rem;
+			margin-bottom: 8px;
+			letter-spacing: -0.5px;
+		}
+
+		.auth-header p {
+			font-size: 0.9rem;
+			opacity: 0.8;
+		}
+
+		.form-label {
+			font-weight: 600;
+			font-size: 0.85rem;
+			margin-bottom: 8px;
+			display: block;
+			color: rgba(255, 255, 255, 0.9);
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+		}
+
+		.input-group-custom {
+			position: relative;
+			margin-bottom: 22px;
+		}
+
+		.form-control-custom {
+			background: rgba(255, 255, 255, 0.95);
+			border: 2px solid transparent;
+			border-radius: 14px;
+			padding: 14px 18px;
+			width: 100%;
+			font-size: 1rem;
+			color: var(--text-main);
+			transition: all 0.3s ease;
+			outline: none;
+			box-sizing: border-box;
+		}
+
+		.form-control-custom:focus {
+			background: var(--white);
+			border-color: #9f7aea;
+			box-shadow: 0 0 0 4px rgba(159, 122, 234, 0.4);
+		}
+
+		/* Estados de Validação */
+		.is-valid-custom { border-color: var(--success-color) !important; }
+		.is-invalid-custom { border-color: var(--danger-color) !important; }
+		.is-warning-custom { border-color: var(--warning-color) !important; }
+
+		.feedback-msg {
+			font-size: 0.8rem;
+			margin-top: 6px;
+			font-weight: 600;
+			display: none;
+		}
+
+		/* Botões */
+		.btn-primary-custom {
+			background: var(--primary-gradient);
+			border: none;
+			border-radius: 14px;
+			color: var(--white);
+			padding: 16px;
+			width: 100%;
+			font-weight: 700;
+			font-size: 1rem;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+			margin-top: 10px;
+			margin-bottom: 15px;
+		}
+
+		.btn-primary-custom:hover:not(:disabled) {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+			filter: brightness(1.1);
+		}
+
+		.btn-primary-custom:disabled {
+			background: rgba(255, 255, 255, 0.2);
+			color: rgba(255, 255, 255, 0.5);
+			cursor: not-allowed;
+			box-shadow: none;
+		}
+
+		.btn-outline-custom {
+			background: transparent;
+			border: 2px solid rgba(255, 255, 255, 0.3);
+			border-radius: 14px;
+			color: var(--white);
+			padding: 14px;
+			width: 100%;
+			font-weight: 600;
+			font-size: 0.95rem;
+			cursor: pointer;
+			transition: all 0.3s ease;
+		}
+
+		.btn-outline-custom:hover {
+			background: rgba(255, 255, 255, 0.1);
+			border-color: var(--white);
+		}
+
+		.btn-link-custom {
+			background: none;
+			border: none;
+			color: rgba(255, 255, 255, 0.8);
+			font-size: 0.9rem;
+			font-weight: 500;
+			text-decoration: underline;
+			cursor: pointer;
+			margin-top: 15px;
+			width: 100%;
+		}
+
+		.btn-link-custom:hover {
+			color: var(--white);
+		}
+
+		/* Alerts */
+		#alertContainer {
+			position: fixed;
+			top: 25px;
+			right: 25px;
+			z-index: 9999;
+			max-width: 320px;
+		}
+
+		.alert {
+			border-radius: 16px;
+			border: none;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+		}
+
+		/* Helpers */
+		.d-none { display: none !important; }
+		
+		.footer-text {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 0.75rem;
+			opacity: 0.6;
+			line-height: 1.5;
+		}
+
+		/* Animação de Fade */
+		.fade-in {
+			animation: fadeIn 0.4s ease-in-out;
+		}
+
+		@keyframes fadeIn {
+			from { opacity: 0; transform: translateY(10px); }
+			to { opacity: 1; transform: translateY(0); }
+		}
+	</style>
+</head>
+<body>
+
+	<div id="alertContainer"></div>
+
+	<div class="main-container">
+		<!-- CARD DE LOGIN -->
+		<div id="loginView" class="auth-card fade-in">
+			<div class="auth-header">
+				<h2>Autenticação Segura</h2>
+				<p>Validação Progressiva de Acesso</p>
+			</div>
+
+			<form id="loginForm">
+				<div class="input-group-custom">
+					<label for="email" class="form-label">E-mail de Login</label>
+					<input type="email" class="form-control-custom" id="email" placeholder="seu@email.com" required />
+					<div class="feedback-msg" id="emailFeedback"></div>
+				</div>
+
+				<div class="input-group-custom">
+					<label for="senha" class="form-label">Senha</label>
+					<input type="password" class="form-control-custom" id="senha" placeholder="••••••••" required />
+					<div class="feedback-msg" id="senhaFeedback"></div>
+				</div>
+
+				<button type="submit" class="btn-primary-custom" id="btnEntrar" disabled>
+					<span class="spinner-border spinner-border-sm d-none" id="spinnerEntrar"></span>
+					ENTRAR NO SISTEMA
+				</button>
+				
+				<button type="button" class="btn-outline-custom" id="goToRegister">
+					CRIAR NOVA CONTA
+				</button>
+			</form>
+
+			<div class="footer-text">
+				Segurança de Banco de Dados<br>
+				Matrícula: 818174-7
+			</div>
+		</div>
+
+		<!-- CARD DE CADASTRO (Escondido por padrão) -->
+		<div id="registerView" class="auth-card fade-in d-none">
+			<div class="auth-header">
+				<h2>Criar Conta</h2>
+				<p>Cadastre-se para acessar o portal</p>
+			</div>
+
+			<form id="cadastroForm">
+				<div class="input-group-custom">
+					<label for="nomeRegistro" class="form-label">Nome Completo</label>
+					<input type="text" class="form-control-custom" id="nomeRegistro" placeholder="Seu nome" required />
+				</div>
+
+				<div class="input-group-custom">
+					<label for="emailRegistro" class="form-label">E-mail</label>
+					<input type="email" class="form-control-custom" id="emailRegistro" placeholder="seu@email.com" required />
+				</div>
+
+				<div class="row g-2">
+					<div class="col-6">
+						<div class="input-group-custom">
+							<label for="senhaRegistro" class="form-label">Senha</label>
+							<input type="password" class="form-control-custom" id="senhaRegistro" placeholder="Mín. 6" required />
+						</div>
+					</div>
+					<div class="col-6">
+						<div class="input-group-custom">
+							<label for="senhaConfirm" class="form-label">Confirmar</label>
+							<input type="password" class="form-control-custom" id="senhaConfirm" placeholder="Repita" required />
+						</div>
+					</div>
+				</div>
+
+				<button type="button" class="btn-primary-custom" id="btnConfirmarCadastro">
+					<span class="spinner-border spinner-border-sm d-none" id="spinnerCadastro"></span>
+					FINALIZAR CADASTRO
+				</button>
+				
+				<button type="button" class="btn-link-custom" id="goToLogin">
+					Já tenho conta? Voltar para o login
+				</button>
+			</form>
+		</div>
+	</div>
+
+	<!-- Scripts -->
+	<script>
+		// ========================================
+		// CONFIGURAÇÃO
+		// ========================================
+		const MATRICULA = '818174-7';
+		const API_URL = 'http://localhost:3000';
+
+		let fragmentoHashArmazenado = null;
+		let hashCompletoGerado = null;
+
+		// Alternar entre Telas
+		document.getElementById('goToRegister').addEventListener('click', () => {
+			document.getElementById('loginView').classList.add('d-none');
+			document.getElementById('registerView').classList.remove('d-none');
+		});
+
+		document.getElementById('goToLogin').addEventListener('click', () => {
+			document.getElementById('registerView').classList.add('d-none');
+			document.getElementById('loginView').classList.remove('d-none');
+		});
+
+		// ========================================
+		// UTILITÁRIOS
+		// ========================================
+		async function gerarHashSHA256(str) {
+			const encoder = new TextEncoder();
+			const data = encoder.encode(str);
+			const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+			const hashArray = Array.from(new Uint8Array(hashBuffer));
+			return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+		}
+
+		function exibirAlerta(tipo, mensagem) {
+			const alertContainer = document.getElementById('alertContainer');
+			const alertDiv = document.createElement('div');
+			alertDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
+			alertDiv.innerHTML = `${mensagem}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+			alertContainer.appendChild(alertDiv);
+			setTimeout(() => alertDiv.remove(), 4000);
+		}
+
+		// ========================================
+		// VALIDAÇÃO PROGRESSIVA - EMAIL
+		// ========================================
+		document.getElementById('email').addEventListener('blur', async function () {
+			const email = this.value.trim();
+			const feedback = document.getElementById('emailFeedback');
+			this.classList.remove('is-valid-custom', 'is-invalid-custom', 'is-warning-custom');
+			feedback.style.display = 'none';
+
+			if (!email) return;
+
+			try {
+				const response = await fetch(`${API_URL}/api/auth/check-email`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ email })
+				});
+				const data = await response.json();
+
+				if (data.existe) {
+					this.classList.add('is-valid-custom');
+					feedback.textContent = '✓ Usuário reconhecido';
+					feedback.style.color = 'var(--success-color)';
+					feedback.style.display = 'block';
+					fragmentoHashArmazenado = data.fragmentoHash;
+				} else {
+					this.classList.add('is-warning-custom');
+					feedback.textContent = '⚠ Usuário não conhecido';
+					feedback.style.color = 'var(--warning-color)';
+					feedback.style.display = 'block';
+					fragmentoHashArmazenado = null;
+					document.getElementById('btnEntrar').disabled = true;
+				}
+			} catch (err) {
+				exibirAlerta('danger', 'Erro ao conectar ao servidor.');
+			}
+		});
+
+		// ========================================
+		// VALIDAÇÃO PROGRESSIVA - SENHA
+		// ========================================
+		document.getElementById('senha').addEventListener('blur', async function () {
+			const senha = this.value;
+			const feedback = document.getElementById('senhaFeedback');
+			const btnEntrar = document.getElementById('btnEntrar');
+			this.classList.remove('is-valid-custom', 'is-invalid-custom');
+			feedback.style.display = 'none';
+			btnEntrar.disabled = true;
+
+			if (!senha || !fragmentoHashArmazenado) return;
+
+			const hash = await gerarHashSHA256(MATRICULA + senha);
+			hashCompletoGerado = hash;
+
+			if (hash.includes(fragmentoHashArmazenado)) {
+				this.classList.add('is-valid-custom');
+				feedback.textContent = '✓ Senha validada localmente';
+				feedback.style.color = 'var(--success-color)';
+				feedback.style.display = 'block';
+				btnEntrar.disabled = false;
+			} else {
+				this.classList.add('is-invalid-custom');
+				feedback.textContent = '✗ Senha incorreta';
+				feedback.style.color = 'var(--danger-color)';
+				feedback.style.display = 'block';
+			}
+		});
+
+		// ========================================
+		// LOGIN E CADASTRO
+		// ========================================
+		document.getElementById('loginForm').addEventListener('submit', async function (e) {
+			e.preventDefault();
+			const spinner = document.getElementById('spinnerEntrar');
+			spinner.classList.remove('d-none');
+			this.querySelector('button').disabled = true;
+
+			try {
+				const response = await fetch(`${API_URL}/api/auth/login`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						email: document.getElementById('email').value,
+						hashCompleto: hashCompletoGerado
+					})
+				});
+				const data = await response.json();
+				if (data.sucesso) {
+					exibirAlerta('success', '✅ Login realizado com sucesso!');
+					setTimeout(() => location.reload(), 2000);
+				} else {
+					exibirAlerta('danger', 'Falha na autenticação.');
+					this.querySelector('button').disabled = false;
+				}
+			} catch (err) {
+				exibirAlerta('danger', 'Erro de conexão.');
+			} finally {
+				spinner.classList.add('d-none');
+			}
+		});
+
+		document.getElementById('btnConfirmarCadastro').addEventListener('click', async function () {
+			const nome = document.getElementById('nomeRegistro').value;
+			const email = document.getElementById('emailRegistro').value;
+			const senha = document.getElementById('senhaRegistro').value;
+			const confirm = document.getElementById('senhaConfirm').value;
+
+			if (!nome || !email || senha.length < 6) {
+				exibirAlerta('warning', 'Dados incompletos ou senha muito curta.');
+				return;
+			}
+			if (senha !== confirm) {
+				exibirAlerta('danger', 'Senhas não coincidem.');
+				return;
+			}
+
+			const spinner = document.getElementById('spinnerCadastro');
+			spinner.classList.remove('d-none');
+			this.disabled = true;
+
+			try {
+				const hash = await gerarHashSHA256(MATRICULA + senha);
+				const response = await fetch(`${API_URL}/api/auth/register`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ nome, email, hashCompleto: hash })
+				});
+				const data = await response.json();
+				if (data.sucesso) {
+					exibirAlerta('success', 'Conta criada com sucesso! Faça login.');
+					document.getElementById('goToLogin').click();
+				} else {
+					exibirAlerta('danger', data.mensagem);
+				}
+			} catch (err) {
+				exibirAlerta('danger', 'Erro ao cadastrar.');
+			} finally {
+				spinner.classList.add('d-none');
+				this.disabled = false;
+			}
+		});
+	</script>
+</body>
+</html>
