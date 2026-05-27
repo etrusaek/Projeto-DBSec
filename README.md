@@ -1,4 +1,4 @@
-# Sistema de Autenticação com Hash Parcial e Validação Progressiva
+# Sistema de Autenticação Segura #
 
 ## Descrição do Projeto
 
